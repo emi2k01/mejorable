@@ -1,0 +1,22 @@
+._Italic text_
+
+.*Bold text*
+
+.-Strikethrough text-
+
+.*.-._Combined_-*
+
+._Italic text with underscore\_ <- there_
+.*Bold text with asterisk\* <- there*
+.-Strikethrough text with dash\- <= there-
+
+You can make combined text look less awful like this:
+
+.(This is my combined text)[s _*-]
+
+.`s` is an alias for the function `style` and .`*-_` is an option, which
+is the equivalent of italic, bold and strikethrough text. The text in
+parenthesis is the argument to the .`s` function.
+
+(Styled text)[s *-_]
+(Alternative text)[img https://via.placeholder.com/150]

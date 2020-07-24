@@ -1,0 +1,64 @@
+Tables can be created in multiple ways.
+
+You can create a table by writing each row as if they were a list:
+
+Table of language benchmarks. Source: https://github.com/kostya/benchmarks
+
+[table rows]
+Language
+    Time, s
+    Memory, MiB
+    Energy, J
+C++
+    1.00 ± 00.03
+    1.69 ± 00.04
+    19.22 ± 01.46
+Nim GCC
+    1.72 ± 00.06
+    1.87 ± 00.06
+    34.07 ± 02.61
+Vala GCC
+    1.73 ± 00.07
+    3.94 ± 00.04
+    35.68 ± 03.03
+
+The previous table will render as:
+
+| Language | Time, s      | Memory, MiB  | Energy, J     |
+|----------+--------------+--------------+---------------|
+| C++      | 1.00 ± 00.03 | 1.69 ± 00.04 | 19.22 ± 01.46 |
+| Nim GCC  | 1.72 ± 00.06 | 1.87 ± 00.06 | 34.07 ± 02.61 |
+| Vala GCC | 1.73 ± 00.07 | 3.94 ± 00.04 | 35.68 ± 03.03 |
+
+You can also create a table by writing each column as if they were a list
+
+[table columns]
+First Division
+    México
+    Usa
+    Canada
+Second Division
+    France
+    United Kingdom
+    Spain
+Third Division
+    China
+    Thailand
+    Japan
+
+The previous table will render as:
+
+| First Division | Second Division | Third Division |
+|----------------+-----------------+----------------|
+| México         | France          | China          |
+| Usa            | United Kingdom  | Thailand       |
+| Canda          | Spain           | Japan          |
+
+The third way to create a table is as in markdown:
+
+.table md
+| First Division | Second Division | Third Division |
+|----------------|-----------------|----------------|
+| México         | France          | China          |
+| Usa            | United Kingdom  | Thailand       |
+| Canda          | Spain           | Japan          |

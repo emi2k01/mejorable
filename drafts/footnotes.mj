@@ -1,0 +1,24 @@
+This text is here to show how footnotes()[fn] can be used in a paragraph.
+Footnotes can be used multiple times()[fn] in a paragraph. To create the text
+where the footnote link will jump to, you must put the same number of tags in
+order in the next paragraph.
+
+[fn] The first footnote will jump here.
+[fn] This is the second footnote.
+
+Footnotes will always be moved at the end of the rendered document. Putting the
+footnotes after the paragraph is just for easier editing.
+
+Footnotes can also be named. Named footnotes allow you to put the references in
+the order you want. This is useful if you have many footnote links in the same
+paragraph. The next paragraph shows an example of named footnotes.
+
+The first named footnote()[fn first_footnote] has the "first_footnote". The
+second named footnote()[fn i_am_a_foonote] has the name "i_am_a_footnote".
+
+[fn i_am_a_footnote] This is the second footnote, "i_am_a_footnote".
+[fn first_footnote] This is the first footnote, "first_footnote".
+
+Footnotes will always be rendered in the same order they were linked to. This
+means that the "first_footnote" footnote will be first in the rendered list of
+footnotes, even though "i_am_a_footnote" was put first in the source file.

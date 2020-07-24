@@ -1,0 +1,25 @@
+Bullet list:
+
+[list bullet]
+Element A
+Element B
+Element C
+    Element CA
+    Element CB
+        Element CBA
+    Element CD
+Element D
+Element E
+
+Numbered list:
+
+[list numbered]
+Element 1
+Element 2
+Element 3
+    Element 1
+    Element 2
+        Element 1
+    Element 3
+Element 4
+Element 5

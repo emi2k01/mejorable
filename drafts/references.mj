@@ -1,0 +1,25 @@
+References need to elements to work: a link and a target.
+
+The link is the text that must be clicked in order to redirect the reader to
+the target.
+
+The target can be an URL or a mark in your document source.
+
+To create a reference to an URL:
+
+I created a (program)[link https://example.com/] that lets you do nothing.
+
+To create an internal reference, that is, a link to a mark in your own document
+you must create the mark first.
+
+You can create a mark by passing an option to a heading function:
+
+.h1 my_mark_name: This is my heading
+
+or by putting a mark in an arbitrary position:
+
+You can create a mark inline.[mark my_mark_name].
+
+And then create a link:
+
+Hey, .(click here to jump the mark)[link my_mark_name]

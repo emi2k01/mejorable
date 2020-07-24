@@ -1,0 +1,16 @@
+[code rust]
+fn main {
+    let x = 5 + 5;
+    println!("{}", x);
+}
+
+[[code go]]
+package main
+
+import "fmt"
+
+func main() {
+    x := 5 + 5
+    fmt.Println(x)
+}
+[[end]]
