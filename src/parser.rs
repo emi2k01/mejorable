@@ -1,5 +1,5 @@
+use crate::line::token::{LineToken, LineTokenKind};
 use std::vec::IntoIter;
-use crate::line::token::LineToken;
 
 pub(crate) mod tree;
 use tree::Node;
@@ -25,10 +25,23 @@ impl Parser {
         }
     }
 
-    pub fn parse(&mut self) -> Self {
-        while let Some(tok0) = self.current_token {
-            
+    pub fn parse(&mut self) {
+        while let Some(tok0) = &self.current_token {
+            match tok0.kind {
+                LineTokenKind::SingleBlockFunction => self.parse_single_block_function(),
+                _ => {}
+            }
         }
+    }
+
+    fn parse_single_block_function(&mut self) {}
+
+    fn parse_multi_block_function(&mut self) {
+        todo!()
+    }
+
+    fn parse_text(&mut self) {
+        todo!()
     }
 
     fn bump(&mut self) {

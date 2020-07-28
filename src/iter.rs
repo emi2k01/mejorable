@@ -1,2 +1,2 @@
-pub(crate) mod normalized;
 pub(crate) mod double;
+pub(crate) mod normalized;

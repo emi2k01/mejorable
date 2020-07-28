@@ -34,7 +34,7 @@ impl<'a> Iterator for NormalizedChars<'a> {
                 // skip '\r'
                 self.bump();
                 self.current_char
-            },
+            }
             _ => {
                 let ch = self.current_char;
                 self.bump();

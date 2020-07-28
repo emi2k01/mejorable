@@ -2,7 +2,7 @@
 pub(crate) enum Node {
     FunctionCall {
         name: String,
-        options: Vec<String>,
+        args: Vec<String>,
         children: Vec<Node>,
     },
     Text(String),

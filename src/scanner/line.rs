@@ -1,15 +1,25 @@
+pub(crate) mod token;
+
 use std::str::Chars;
 
-use super::token::{LineToken, LineTokenKind};
+use token::{LineToken, LineTokenKind};
+
+use crate::iter::double::IntoDoubleIter;
 use crate::span::Span;
 use crate::token::Token;
-use crate::iter::double::IntoDoubleIter;
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub(crate) struct Line {
+    indentation: u32,
+    tokens: Vec<LineToken>,
+}
 
 pub(crate) struct LineScanner<'a> {
     input: Chars<'a>,
     current_char: Option<char>,
     peek_char: Option<char>,
     tokens: Vec<LineToken>,
+    indentation: u32,
     offset: u32,
 }
 
@@ -20,6 +30,7 @@ impl<'a> LineScanner<'a> {
             current_char: None,
             peek_char: None,
             tokens: vec![],
+            indentation: 0,
             offset: 0,
         };
 
@@ -31,10 +42,13 @@ impl<'a> LineScanner<'a> {
         this
     }
 
-    pub(crate) fn scan(mut self) -> Vec<LineToken> {
+    pub(crate) fn scan(mut self) -> Line {
         if self.is_separator() {
             self.scan_separator();
-            return self.tokens;
+            return Line {
+                indentation: 0,
+                tokens: self.tokens,
+            };
         }
 
         while let Some(tok0) = self.current_char {
@@ -52,15 +66,17 @@ impl<'a> LineScanner<'a> {
                     } else {
                         self.scan_text_and_inline_functions();
                     }
-                },
-                // TODO: Is having the indentation as a separate token useful?
-                // (Some(' '), _) | (Some('\t'), _) => self.scan_indentation(),
+                }
+                (' ', _) | ('\t', _) => self.indentation = self.scan_indentation(),
 
                 _ => self.scan_text_and_inline_functions(),
             }
         }
 
-        self.tokens
+        Line {
+            indentation: self.indentation,
+            tokens: self.tokens,
+        }
     }
 
     fn scan_separator(&mut self) {
@@ -120,8 +136,11 @@ impl<'a> LineScanner<'a> {
             if self.current_char == Some(')') && self.peek_char == Some('[') {
                 got_paren_and_bracket = true;
             }
-            if got_paren_and_bracket && self.current_char != Some('\\') && self.peek_char == Some(']') {
-                break
+            if got_paren_and_bracket
+                && self.current_char != Some('\\')
+                && self.peek_char == Some(']')
+            {
+                break;
             }
             self.bump();
         }
@@ -161,17 +180,14 @@ impl<'a> LineScanner<'a> {
         }
     }
 
-    fn scan_indentation(&mut self) {
+    fn scan_indentation(&mut self) -> u32 {
         let start_offset = self.offset;
         while self.current_char == Some(' ') || self.current_char == Some('\t') {
             self.bump();
         }
 
         let token_len = self.offset - start_offset;
-        self.tokens.push(LineToken::new(
-            LineTokenKind::Indentation,
-            Span::new(start_offset, token_len),
-        ));
+        token_len
     }
 
     fn in_inline_function(&self) -> bool {
@@ -184,9 +200,11 @@ impl<'a> LineScanner<'a> {
         for (ch0, ch1) in line {
             match (ch0, ch1) {
                 (')', Some('[')) => got_paren_and_bracket = true,
-                (']', _) => if got_paren_and_bracket {
-                    return true
-                },
+                (']', _) => {
+                    if got_paren_and_bracket {
+                        return true;
+                    }
+                }
                 _ => {}
             }
         }
@@ -225,12 +243,15 @@ impl<'a> LineScanner<'a> {
     }
 
     fn is_separator(&self) -> bool {
-        if !self.current_char.map_or(true, |ch| ch.is_ascii_whitespace()) {
+        if !self
+            .current_char
+            .map_or(true, |ch| ch.is_ascii_whitespace())
+        {
             return false;
         }
 
         if !self.peek_char.map_or(true, |ch| ch.is_ascii_whitespace()) {
-            return false
+            return false;
         }
 
         let line = self.input.clone();
@@ -245,10 +266,8 @@ impl<'a> LineScanner<'a> {
     /// Ignores tokens with a length of 0
     fn push_token(&mut self, kind: LineTokenKind, start_offset: u32) {
         let token_len = self.offset - start_offset;
-        self.tokens.push(Token::new(
-            kind,
-            Span::new(start_offset, token_len),
-        ));
+        self.tokens
+            .push(Token::new(kind, Span::new(start_offset, token_len)));
     }
 
     fn bump(&mut self) {
@@ -262,7 +281,7 @@ impl<'a> LineScanner<'a> {
 mod tests {
     use super::*;
 
-    fn tokens(src: &str) -> Vec<LineToken> {
+    fn tokens(src: &str) -> Line {
         let scanner = LineScanner::new(src.chars());
         scanner.scan()
     }
@@ -270,9 +289,13 @@ mod tests {
     #[test]
     fn test_single_block_function_without_options() {
         let result = tokens("[code]");
-        let expected = vec![
-            LineToken::new(LineTokenKind::SingleBlockFunction, Span::new(0, 6)),
-        ];
+        let expected = Line {
+            indentation: 0,
+            tokens: vec![LineToken::new(
+                LineTokenKind::SingleBlockFunction,
+                Span::new(0, 6),
+            )],
+        };
 
         assert_eq!(result, expected);
     }
@@ -280,9 +303,13 @@ mod tests {
     #[test]
     fn test_multi_block_function_without_options() {
         let result = tokens("[[code]]");
-        let expected = vec![
-            LineToken::new(LineTokenKind::MultiBlockFunction, Span::new(0, 8)),
-        ];
+        let expected = Line {
+            indentation: 0,
+            tokens: vec![LineToken::new(
+                LineTokenKind::MultiBlockFunction,
+                Span::new(0, 8),
+            )],
+        };
 
         assert_eq!(result, expected);
     }
@@ -290,9 +317,10 @@ mod tests {
     #[test]
     fn test_text() {
         let result = tokens("  Hey how are you???\t\t");
-        let expected = vec![
-            LineToken::new(LineTokenKind::Text, Span::new(0, 22)),
-        ];
+        let expected = Line {
+            indentation: 2,
+            tokens: vec![LineToken::new(LineTokenKind::Text, Span::new(2, 20))],
+        };
 
         assert_eq!(result, expected);
     }
@@ -300,10 +328,13 @@ mod tests {
     #[test]
     fn test_text_with_inline_function() {
         let result = tokens("Hello, (world)[hey]");
-        let expected = vec![
-            LineToken::new(LineTokenKind::Text, Span::new(0, 7)),
-            LineToken::new(LineTokenKind::InlineFunction, Span::new(7, 12)),
-        ];
+        let expected = Line {
+            indentation: 0,
+            tokens: vec![
+                LineToken::new(LineTokenKind::Text, Span::new(0, 7)),
+                LineToken::new(LineTokenKind::InlineFunction, Span::new(7, 12)),
+            ],
+        };
 
         assert_eq!(result, expected);
     }
@@ -311,21 +342,22 @@ mod tests {
     #[test]
     fn test_separator() {
         let result = tokens("\t \t ");
-        let expected = vec![
-            LineToken::new(LineTokenKind::Separator, Span::new(0, 4)),
-        ];
+        let expected = Line {
+            indentation: 0,
+            tokens: vec![LineToken::new(LineTokenKind::Separator, Span::new(0, 4))],
+        };
 
         assert_eq!(result, expected);
     }
 
-    // #[test]
-    // fn test_indentation() {
-    //     let result = tokens("    \tHola");
-    //     let expected = vec![
-    //         LineToken::new(LineTokenKind::Indentation, Span::new(0, 5)),
-    //         LineToken::new(LineTokenKind::Text, Span::new(5, 4)),
-    //     ];
+    #[test]
+    fn test_indentation() {
+        let result = tokens("    \tHola");
+        let expected = Line {
+            indentation: 5,
+            tokens: vec![LineToken::new(LineTokenKind::Text, Span::new(5, 4))],
+        };
 
-    //     assert_eq!(result, expected);
-    // }
+        assert_eq!(result, expected);
+    }
 }

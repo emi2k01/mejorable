@@ -1,6 +1,7 @@
+/// Iterator with a view of two elements
 pub(crate) struct DoubleIter<T, U>
 where
-    T: Iterator<Item = U>
+    T: Iterator<Item = U>,
 {
     inner: T,
     item0: Option<U>,
@@ -9,7 +10,7 @@ where
 
 impl<T, U> DoubleIter<T, U>
 where
-    T: Iterator<Item = U>
+    T: Iterator<Item = U>,
 {
     pub(crate) fn new(inner: T) -> Self {
         let mut this = Self {
@@ -33,7 +34,7 @@ where
 impl<T, U> Iterator for DoubleIter<T, U>
 where
     T: Iterator<Item = U>,
-    U: Clone
+    U: Clone,
 {
     type Item = (U, Option<U>);
     fn next(&mut self) -> Option<Self::Item> {
@@ -49,14 +50,14 @@ where
 
 pub(crate) trait IntoDoubleIter<T, I>
 where
-    T: Iterator<Item = I>
+    T: Iterator<Item = I>,
 {
     fn into_double_iter(self) -> DoubleIter<T, I>;
 }
 
 impl<T, I> IntoDoubleIter<T, I> for T
 where
-    T: Iterator<Item = I>
+    T: Iterator<Item = I>,
 {
     fn into_double_iter(self) -> DoubleIter<T, I> {
         DoubleIter::new(self)
